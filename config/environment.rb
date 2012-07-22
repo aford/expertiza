@@ -5,6 +5,8 @@ RAILS_GEM_VERSION = '2.3.14'
 
 # Bootstrap the Rails environment, frameworks, and default configuration
 require File.join(File.dirname(__FILE__), 'boot')
+# Log4r config
+require File.join(File.dirname(__FILE__), 'log4r')
 
 Rails::Initializer.run do |config|
   # Settings in config/environments/* take precedence over those specified here.

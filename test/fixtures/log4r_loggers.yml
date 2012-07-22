@@ -1,0 +1,9 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one:
+  name: MyString
+  isEnabled: false
+
+two:
+  name: MyString
+  isEnabled: false

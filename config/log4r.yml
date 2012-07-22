@@ -1,0 +1,115 @@
+--- 
+log4r_config: 
+  pre_config: 
+    global: 
+      level: INFO
+    root: 
+      level: INFO
+    custom_levels: 
+    - INFO
+    - NONE
+  loggers: 
+  - trace: "false"
+    level: NONE
+    name: debugr
+    additive: "false"
+    outputters: 
+    - stderr
+    - debugr
+  - trace: "false"
+    level: NONE
+    name: assignment
+    additive: "false"
+    outputters: 
+    - stderr
+    - assignment
+  - trace: "false"
+    level: NONE
+    name: team
+    additive: "false"
+    outputters: 
+    - stderr
+    - team
+  - trace: "false"
+    level: NONE
+    name: review
+    additive: "false"
+    outputters: 
+    - stderr
+    - review
+  - trace: "false"
+    level: NONE
+    name: author_feedback
+    additive: "false"
+    outputters: 
+    - stderr
+    - author_feedback
+  - trace: "false"
+    level: NONE
+    name: teammate_review
+    additive: "false"
+    outputters: 
+    - stderr
+    - teammate_review
+  outputters: 
+  - dirname: "#{RAILS_ROOT}/log"
+    level: INFO
+    name: debugr
+    formatter: 
+      date_pattern: "%y%m%d %H:%M:%S"
+      pattern: "%d %l: %m "
+      type: PatternFormatter
+    filename: debugr.log
+    type: DateFileOutputter
+  - dirname: "#{RAILS_ROOT}/log"
+    level: INFO
+    name: assignment
+    formatter: 
+      date_pattern: "%y%m%d %H:%M:%S"
+      pattern: "%d %l: %m "
+      type: PatternFormatter
+    filename: assignment.log
+    type: DateFileOutputter
+  - dirname: "#{RAILS_ROOT}/log"
+    level: INFO
+    name: team
+    formatter: 
+      date_pattern: "%y%m%d %H:%M:%S"
+      pattern: "%d %l: %m "
+      type: PatternFormatter
+    filename: team.log
+    type: DateFileOutputter
+  - dirname: "#{RAILS_ROOT}/log"
+    level: INFO
+    name: review
+    formatter: 
+      date_pattern: "%y%m%d %H:%M:%S"
+      pattern: "%d %l: %m "
+      type: PatternFormatter
+    filename: review.log
+    type: DateFileOutputter
+  - dirname: "#{RAILS_ROOT}/log"
+    level: INFO
+    name: author_feedback
+    formatter: 
+      date_pattern: "%y%m%d %H:%M:%S"
+      pattern: "%d %l: %m "
+      type: PatternFormatter
+    filename: author_feedback.log
+    type: DateFileOutputter
+  - dirname: "#{RAILS_ROOT}/log"
+    level: INFO
+    name: teammate_review
+    formatter: 
+      date_pattern: "%y%m%d %H:%M:%S"
+      pattern: "%d %l: %m "
+      type: PatternFormatter
+    filename: teammate_review.log
+    type: DateFileOutputter
+  - level: INFO
+    name: stderr
+    formatter: 
+      date_pattern: "%y%m%d %H:%M:%S"
+      pattern: "%d %l: %m "
+      type: PatternFormatter
+    type: StderrOutputter

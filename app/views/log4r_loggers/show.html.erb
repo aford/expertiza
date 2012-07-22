@@ -1,0 +1,13 @@
+<p>
+  <b>Name:</b>
+  <%=h @log4r_logger.name %>
+</p>
+
+<p>
+  <b>Is enabled?</b>
+  <%=h @log4r_logger.is_enabled %>
+</p>
+
+
+<%= link_to 'Edit', edit_log4r_logger_path(@log4r_logger) %> |
+<%= link_to 'Back', log4r_loggers_path %>
