@@ -1,6 +1,5 @@
 source 'http://rubygems.org'
 
-gem 'aquarium'
 gem 'log4r'
 gem 'capistrano'
 gem 'expertiza-authlogic', '~> 2.1.6.1', :require => 'authlogic'

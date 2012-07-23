@@ -1,22 +1,35 @@
+require 'log4r'
+
 class ResponseController < ApplicationController
   helper :wiki
   helper :submitted_content
-  helper :file  
+  helper :file
+  
+  # set up logger  
+  @@ResponseLogger = Log4r::Logger['responses']
+  if @@ResponseLogger.nil?
+    # if logger not in config, create new to avoid startup errors.
+    @@ResponseLogger = Log4r::Logger.new 'responses'
+  end
   
   def delete
+    @@ResponseLogger.debug("Entering #{self.class.name}::#{__method__}")
     @response = Response.find(params[:id])
     return if redirect_when_disallowed(@response)
 
     map_id = @response.map.id
     @response.delete
+    @@ResponseLogger.info("Deleted response with id:#{@response.id} mapped to map_id:#{@response.map_id}")
     redirect_to :action => 'redirection', :id => map_id, :return => params[:return], :msg => "The response was deleted."
+    @@ResponseLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
 
   #Determining the current phase and check if a review is already existing for this stage.
   #If so, edit that version otherwise create a new version.
 
   def rereview
-     @map=ResponseMap.find(params[:id])
+    @@ResponseLogger.debug("Entering #{self.class.name}::#{__method__}")
+    @map=ResponseMap.find(params[:id])
      get_content
         array_not_empty=0
       @sorted_array=Array.new
@@ -119,9 +132,11 @@ class ResponseController < ApplicationController
           end
 
        end
+    @@ResponseLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
   
   def edit
+    @@ResponseLogger.debug("Entering #{self.class.name}::#{__method__}")
     @header = "Edit"
     @next_action = "update"
     @return = params[:return]
@@ -160,24 +175,30 @@ class ResponseController < ApplicationController
       #**********************
       render :action => 'response'
     end
+    @@ResponseLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
   
   def redirect_when_disallowed(response)
+    @@ResponseLogger.debug("Entering #{self.class.name}::#{__method__}")
     # For author feedback, participants need to be able to read feedback submitted by other teammates.
     # If response is anything but author feedback, only the person who wrote feedback should be able to see it.
     if response.map.read_attribute(:type) == 'FeedbackResponseMap' && response.map.assignment.team_assignment
       team = response.map.reviewer.team
       unless team.has_user session[:user]
         redirect_to '/denied?reason=You are not on the team that wrote this feedback'
+        @@ResponseLogger.debug("Leaving #{self.class.name}::#{__method__}")
         return true
       end
     else
+      @@ResponseLogger.debug("Leaving #{self.class.name}::#{__method__}")
       return true unless current_user_id?(response.map.reviewer.user_id)
     end
+    @@ResponseLogger.debug("Leaving #{self.class.name}::#{__method__}")
     return false
   end
   
   def update
+    @@ResponseLogger.debug("Entering #{self.class.name}::#{__method__}")
     @response = Response.find(params[:id])
     return if redirect_when_disallowed(@response)
     @myid = @response.id
@@ -213,9 +234,11 @@ class ResponseController < ApplicationController
       msg = "An error occurred while saving the response: "+$!
     end
     redirect_to :controller => 'response', :action => 'saving', :id => @map.id, :return => params[:return], :msg => msg
+    @@ResponseLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end  
   
   def custom_update
+    @@ResponseLogger.debug("Entering #{self.class.name}::#{__method__}")
     @response = Response.find(params[:id])
     @myid = @response.id
     msg = ""
@@ -236,10 +259,12 @@ class ResponseController < ApplicationController
     end
 
     msg = "#{@map.get_title} was successfully saved."
+    @@ResponseLogger.debug("Leaving #{self.class.name}::#{__method__}")
     redirect_to :controller => 'response', :action => 'saving', :id => @map.id, :return => params[:return], :msg => msg
   end
 
   def new_feedback
+    @@ResponseLogger.debug("Entering #{self.class.name}::#{__method__}")
     review = Response.find(params[:id])
     if review
       reviewer = AssignmentParticipant.find_by_user_id_and_parent_id(session[:user].id, review.map.assignment.id)
@@ -247,13 +272,17 @@ class ResponseController < ApplicationController
       if map.nil?
         map = FeedbackResponseMap.create(:reviewed_object_id => review.id, :reviewer_id => reviewer.id, :reviewee_id => review.map.reviewer.id)
       end
+      @@ResponseLogger.info("Creating #{map.type} for review_id: #{review.id} by reviewer_id: #{reviewer.id} for reviewee_id: #{review.map.reviewer.id}")
+      
       redirect_to :action => 'new', :id => map.id, :return => "feedback"
     else
       redirect_to :back
     end
+    @@ResponseLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
   
   def view
+    @@ResponseLogger.debug("Entering #{self.class.name}::#{__method__}")
     @response = Response.find(params[:id])
     return if redirect_when_disallowed(@response)
     @map = @response.map
@@ -265,9 +294,11 @@ class ResponseController < ApplicationController
       @review_scores << Score.find_by_response_id_and_question_id(@response.id, question.id)
       @question_type << QuestionType.find_by_question_id(question.id)
     }
+    @@ResponseLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
   
   def new
+    @@ResponseLogger.debug("Entering #{self.class.name}::#{__method__}")
     @header = "New"
     @next_action = "create"    
     @feedback = params[:feedback]
@@ -299,9 +330,11 @@ class ResponseController < ApplicationController
     else
       render :action => 'response'
     end
+    @@ResponseLogger.debug("Leaving #{self.class.name}::#{__method__}")
    end
   
   def create     
+    @@ResponseLogger.debug("Entering #{self.class.name}::#{__method__}")
     @map = ResponseMap.find(params[:id])
     @res = 0
     msg = ""
@@ -354,9 +387,11 @@ class ResponseController < ApplicationController
       error_msg = "Your response was not saved. Cause: " + $!
     end
     redirect_to :controller => 'response', :action => 'saving', :id => @map.id, :return => params[:return], :msg => msg, :error_msg => error_msg
+    @@ResponseLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end      
   
   def custom_create
+    @@ResponseLogger.debug("Entering #{self.class.name}::#{__method__}")
     @map = ResponseMap.find(params[:id])
     @response = Response.create(:map_id => @map.id, :additional_comment => "")
     @res = @response.id
@@ -370,11 +405,14 @@ class ResponseController < ApplicationController
 
     end
     msg = "#{@map.get_title} was successfully saved."
+    @@ResponseLogger.info("Created response with id:#{@response.id} mapped to map_id:#{@response.map_id}")
     
+    @@ResponseLogger.debug("Leaving #{self.class.name}::#{__method__}")
     redirect_to :controller => 'response', :action => 'saving', :id => @map.id, :return => params[:return], :msg => msg
   end
 
   def saving   
+    @@ResponseLogger.debug("Entering #{self.class.name}::#{__method__}")
     @map = ResponseMap.find(params[:id])
     @return = params[:return]
     @map.notification_accepted = false;
@@ -382,10 +420,14 @@ class ResponseController < ApplicationController
     puts(params[:id]);
     @map.save
     
+    @@ResponseLogger.info("Successfully saved #{@map.type} for review_id: #{@map.id} by reviewer_id: #{@map.reviewer_id} for reviewee_id: #{@map.reviewee_id}")
+      
+    @@ResponseLogger.debug("Leaving #{self.class.name}::#{__method__}")
     redirect_to :action => 'redirection', :id => @map.id, :return => params[:return], :msg => params[:msg], :error_msg => params[:error_msg]
   end
   
   def redirection
+    @@ResponseLogger.debug("Entering #{self.class.name}::#{__method__}")
     flash[:error] = params[:error_msg] unless params[:error_msg] and params[:error_msg].empty?
     flash[:note]  = params[:msg] unless params[:msg] and params[:msg].empty?
     
@@ -399,11 +441,13 @@ class ResponseController < ApplicationController
     else
       redirect_to :controller => 'student_review', :action => 'list', :id => @map.reviewer.id
     end 
+    @@ResponseLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
   
   private
     
   def get_content    
+    @@ResponseLogger.debug("Entering #{self.class.name}::#{__method__}")
     @title = @map.get_title 
     @assignment = @map.assignment
     @participant = @map.reviewer
@@ -412,20 +456,25 @@ class ResponseController < ApplicationController
     @questions = @questionnaire.questions
     @min = @questionnaire.min_question_score
     @max = @questionnaire.max_question_score     
+    @@ResponseLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
   
   def redirect_when_disallowed(response)
+    @@ResponseLogger.debug("Entering #{self.class.name}::#{__method__}")
     # For author feedback, participants need to be able to read feedback submitted by other teammates.
     # If response is anything but author feedback, only the person who wrote feedback should be able to see it.
     if response.map.read_attribute(:type) == 'FeedbackResponseMap' && response.map.assignment.team_assignment
       team = response.map.reviewer.team
       unless team.has_user session[:user]
         redirect_to '/denied?reason=You are not on the team that wrote this feedback'
+        @@ResponseLogger.debug("Leaving #{self.class.name}::#{__method__}")
         return true
       end
     else
+      @@ResponseLogger.debug("Leaving #{self.class.name}::#{__method__}")
       return true unless current_user_id?(response.map.reviewer.user_id)
     end
+    @@ResponseLogger.debug("Leaving #{self.class.name}::#{__method__}")
     return false
   end
 end

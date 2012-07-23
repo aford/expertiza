@@ -2,17 +2,15 @@ class InitializeLog4rLoggers < ActiveRecord::Migration
   def self.up
     create_table :log4r_loggers do |t|
       t.string :name
-      t.boolean :is_enabled
+      t.string :log_level
 
       t.timestamps
     end
     
-    execute "INSERT INTO log4r_loggers(name, is_enabled, created_at) VALUES ('debugr', false, SYSDATE())"
-    execute "INSERT INTO log4r_loggers(name, is_enabled, created_at) VALUES ('assignment', false, SYSDATE())"
-    execute "INSERT INTO log4r_loggers(name, is_enabled, created_at) VALUES ('team', false, SYSDATE())"
-    execute "INSERT INTO log4r_loggers(name, is_enabled, created_at) VALUES ('review', false, SYSDATE())"
-    execute "INSERT INTO log4r_loggers(name, is_enabled, created_at) VALUES ('author_feedback', false, SYSDATE())"
-    execute "INSERT INTO log4r_loggers(name, is_enabled, created_at) VALUES ('teammate_review', false, SYSDATE())"
+    execute "INSERT INTO log4r_loggers(name, log_level, created_at) VALUES ('assignment', 'NONE', SYSDATE())"
+    execute "INSERT INTO log4r_loggers(name, log_level, created_at) VALUES ('team', 'NONE', SYSDATE())"
+    execute "INSERT INTO log4r_loggers(name, log_level, created_at) VALUES ('review', 'NONE', SYSDATE())"
+    execute "INSERT INTO log4r_loggers(name, log_level, created_at) VALUES ('responses', 'NONE', SYSDATE())"
 
   end
 

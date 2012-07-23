@@ -180,7 +180,7 @@ ActiveRecord::Schema.define(:version => 20120720233603) do
 
   create_table "log4r_loggers", :force => true do |t|
     t.string   "name"
-    t.boolean  "is_enabled"
+    t.string   "log_level"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

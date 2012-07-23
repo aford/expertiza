@@ -36,7 +36,7 @@ module Log4rLoggersHelper
     logfile_names.each do |name|
       outputter = Hash.new
       outputter['name'] = name
-      outputter['level'] = 'INFO'
+      outputter['level'] = 'DEBUG'
       outputter['formatter'] = get_formatter
       if name == 'stderr'
         outputter['type'] = 'StderrOutputter'
@@ -62,11 +62,7 @@ module Log4rLoggersHelper
     loggerHash = Hash.new
     name = logger.name
     loggerHash['name'] = name
-    if (logger.is_enabled)
-      loggerHash['level'] = 'INFO'
-    else
-      loggerHash['level'] = 'NONE'
-    end
+    loggerHash['level'] = logger.log_level
     loggerHash['additive'] = 'false'
     loggerHash['trace'] = 'false'
     loggerHash['outputters'] = Array.new
@@ -84,11 +80,11 @@ module Log4rLoggersHelper
   end
 
   def self.get_default_level
-    return {'level' => 'INFO'}
+    return {'level' => 'DEBUG'}
   end
   
   def self.get_custom_levels
-    return ['INFO', 'NONE']
+    return ['NONE', 'INFO', 'DEBUG']
   end
 
 

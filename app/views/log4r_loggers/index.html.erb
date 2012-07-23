@@ -9,7 +9,7 @@
 <% @log4r_loggers.each do |log4r_logger| %>
   <tr>
     <td><%=h log4r_logger.name %></td>
-    <td><%=h log4r_logger.is_enabled %></td>
+    <td><%=h log4r_logger.log_level %></td>
     <td><%= link_to 'Show', log4r_logger %></td>
     <td><%= link_to 'Edit', edit_log4r_logger_path(log4r_logger) %></td>
     <td><%= link_to 'Destroy', log4r_logger, :confirm => 'Are you sure?', :method => :delete %></td>
@@ -24,5 +24,5 @@
 <br />
 <br />
 
-<%= link_to 'Force new log4r config yaml generation*', :action => Log4rLoggersHelper::generate_log4r_config %>
+<%= link_to 'Force new log4r config yaml generation*', :updatecfg => true %>
 <p>*Requires Rails restart</p>

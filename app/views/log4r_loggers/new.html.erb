@@ -8,8 +8,8 @@
     <%= f.text_field :name %>
   </p>
   <p>
-    <%= f.label :is_enabled %><br />
-    <%= f.check_box :is_enabled %>
+    <%= f.label :log_level, "Log Level "  %>
+    <%= f.select :log_level, Log4rLoggersHelper::get_custom_levels  %>
   </p>
   <p>
     <%= f.submit 'Create' %>

@@ -4,13 +4,17 @@ class Log4rLoggersController < ApplicationController
   # GET /log4r_loggers
   # GET /log4r_loggers.xml
   def index
-    log =  Log4r::Logger['teammate_review']
-    log.info("MMDEBUG - Test message from debugr")
     @log4r_loggers = Log4rLogger.all
 
     respond_to do |format|
-      format.html # index.html.erb
-      format.xml  { render :xml => @log4r_loggers }
+      if !params[:updatecfg].nil?
+        Log4rLoggersHelper::generate_log4r_config
+        format.html { redirect_to(log4r_loggers_url, :notice => 'Log4rLogger was successfully updated. Please restart the server for the changes to take effect.') }
+      else
+        params[:updatecfg] = nil
+        format.html # index.html.erb
+        format.xml  { render :xml => @log4r_loggers }
+      end
     end
   end
 
@@ -48,7 +52,8 @@ class Log4rLoggersController < ApplicationController
 
     respond_to do |format|
       if @log4r_logger.save
-        format.html { redirect_to(@log4r_logger, :notice => 'Log4rLogger was successfully created.') }
+        Log4rLoggersHelper::generate_log4r_config
+        format.html { redirect_to(@log4r_logger, :notice => 'Log4rLogger was successfully created. Please restart the server for the changes to take effect.') }
         format.xml  { render :xml => @log4r_logger, :status => :created, :location => @log4r_logger }
       else
         format.html { render :action => "new" }
@@ -64,7 +69,8 @@ class Log4rLoggersController < ApplicationController
 
     respond_to do |format|
       if @log4r_logger.update_attributes(params[:log4r_logger])
-        format.html { redirect_to(@log4r_logger, :notice => 'Log4rLogger was successfully updated.') }
+        Log4rLoggersHelper::generate_log4r_config
+        format.html { redirect_to(@log4r_logger, :notice => 'Log4rLogger was successfully updated. Please restart the server for the changes to take effect.') }
         format.xml  { head :ok }
       else
         format.html { render :action => "edit" }
@@ -80,7 +86,8 @@ class Log4rLoggersController < ApplicationController
     @log4r_logger.destroy
 
     respond_to do |format|
-      format.html { redirect_to(log4r_loggers_url) }
+      Log4rLoggersHelper::generate_log4r_config
+      format.html { redirect_to(log4r_loggers_url, :notice => 'Log4rLogger was successfully updated. Please restart the server for the changes to take effect.') }
       format.xml  { head :ok }
     end
   end
