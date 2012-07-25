@@ -11,6 +11,13 @@
 
 ActiveRecord::Schema.define(:version => 20120720233603) do
 
+  create_table "assignment_groups", :force => true do |t|
+    t.string   "name"
+    t.integer  "xp"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "assignment_questionnaires", :force => true do |t|
     t.integer "assignment_id"
     t.integer "questionnaire_id"
@@ -53,8 +60,11 @@ ActiveRecord::Schema.define(:version => 20120720233603) do
     t.integer  "max_reviews_per_submission"
     t.integer  "review_topic_threshold",            :default => 0
     t.boolean  "availability_flag"
+    t.integer  "assignment_group_id"
+    t.integer  "xp"
   end
 
+  add_index "assignments", ["assignment_group_id"], :name => "fk_assignments_group_id"
   add_index "assignments", ["course_id"], :name => "fk_assignments_courses"
   add_index "assignments", ["instructor_id"], :name => "fk_assignments_instructors"
   add_index "assignments", ["review_of_review_questionnaire_id"], :name => "fk_assignments_review_of_review_questionnaires"

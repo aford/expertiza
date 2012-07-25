@@ -1,38 +1,9 @@
 --- 
 log4r_config: 
-  loggers: 
-  - level: INFO
-    trace: "false"
-    outputters: 
-    - stderr
-    - assignment
-    additive: "false"
-    name: assignment
-  - level: NONE
-    trace: "false"
-    outputters: 
-    - stderr
-    - team
-    additive: "false"
-    name: team
-  - level: NONE
-    trace: "false"
-    outputters: 
-    - stderr
-    - review
-    additive: "false"
-    name: review
-  - level: NONE
-    trace: "false"
-    outputters: 
-    - stderr
-    - responses
-    additive: "false"
-    name: responses
   pre_config: 
-    root: 
-      level: DEBUG
     global: 
+      level: DEBUG
+    root: 
       level: DEBUG
     custom_levels: 
     - DEBUG
@@ -40,45 +11,58 @@ log4r_config:
     - NONE
   outputters: 
   - dirname: "#{RAILS_ROOT}/log"
-    filename: assignment.log
+    level: DEBUG
+    name: Logger_#{i}
+    type: DateFileOutputter
     formatter: 
       pattern: "%d %l: %m "
+      date_pattern: "%Y-%m-%d %H:%M:%S"
       type: PatternFormatter
-      date_pattern: "%y%m%d %H:%M:%S"
-    level: DEBUG
-    type: DateFileOutputter
-    name: assignment
+    filename: Logger_#{i}.log
   - dirname: "#{RAILS_ROOT}/log"
-    filename: team.log
+    level: DEBUG
+    name: logger2
+    type: DateFileOutputter
     formatter: 
       pattern: "%d %l: %m "
+      date_pattern: "%Y-%m-%d %H:%M:%S"
       type: PatternFormatter
-      date_pattern: "%y%m%d %H:%M:%S"
-    level: DEBUG
-    type: DateFileOutputter
-    name: team
+    filename: logger2.log
   - dirname: "#{RAILS_ROOT}/log"
-    filename: review.log
+    level: DEBUG
+    name: Logger_#{i}
+    type: DateFileOutputter
     formatter: 
       pattern: "%d %l: %m "
+      date_pattern: "%Y-%m-%d %H:%M:%S"
       type: PatternFormatter
-      date_pattern: "%y%m%d %H:%M:%S"
-    level: DEBUG
-    type: DateFileOutputter
-    name: review
-  - dirname: "#{RAILS_ROOT}/log"
-    filename: responses.log
-    formatter: 
-      pattern: "%d %l: %m "
-      type: PatternFormatter
-      date_pattern: "%y%m%d %H:%M:%S"
-    level: DEBUG
-    type: DateFileOutputter
-    name: responses
-  - formatter: 
-      pattern: "%d %l: %m "
-      type: PatternFormatter
-      date_pattern: "%y%m%d %H:%M:%S"
-    level: DEBUG
-    type: StderrOutputter
+    filename: Logger_#{i}.log
+  - level: DEBUG
     name: stderr
+    type: StderrOutputter
+    formatter: 
+      pattern: "%d %l: %m "
+      date_pattern: "%Y-%m-%d %H:%M:%S"
+      type: PatternFormatter
+  loggers: 
+  - level: NONE
+    trace: "false"
+    name: Logger_#{i}
+    outputters: 
+    - stderr
+    - Logger_#{i}
+    additive: "false"
+  - level: DEBUG
+    trace: "false"
+    name: logger2
+    outputters: 
+    - stderr
+    - logger2
+    additive: "false"
+  - level: NONE
+    trace: "false"
+    name: Logger_#{i}
+    outputters: 
+    - stderr
+    - Logger_#{i}
+    additive: "false"
