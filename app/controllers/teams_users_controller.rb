@@ -1,4 +1,4 @@
-require 'log4r'
+require 'log4r_aford'
 
 class TeamsUsersController < ApplicationController
 
@@ -56,13 +56,16 @@ class TeamsUsersController < ApplicationController
   end    
 
   def delete_selected
+    @@TeamLogger.debug("Entering #{self.class.name}::#{__method__}")
     params[:item].each {
       |item_id|      
       team_user = TeamsUser.find(item_id).first
       team_user.destroy
+      @@TeamLogger.info("Team user #{team_user.name} deleted.")
     }
     
     redirect_to :action => 'list', :id => params[:id]
+    @@TeamLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
   
 end

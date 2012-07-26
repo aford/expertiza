@@ -1,4 +1,4 @@
-require 'log4r'
+require 'log4r_aford'
 
 class ResponseController < ApplicationController
   helper :wiki
@@ -272,7 +272,7 @@ class ResponseController < ApplicationController
       if map.nil?
         map = FeedbackResponseMap.create(:reviewed_object_id => review.id, :reviewer_id => reviewer.id, :reviewee_id => review.map.reviewer.id)
       end
-      @@ResponseLogger.info("Creating #{map.type} for review_id: #{review.id} by reviewer_id: #{reviewer.id} for reviewee_id: #{review.map.reviewer.id}")
+      @@ResponseLogger.info("Creating #{map.type} for review_id: #{map.id} by reviewer_id: #{map.reviewer_id} for reviewee_id: #{map.reviewee_id}")
       
       redirect_to :action => 'new', :id => map.id, :return => "feedback"
     else

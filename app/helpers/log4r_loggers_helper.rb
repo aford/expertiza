@@ -1,10 +1,11 @@
-require 'log4r'
+require 'log4r_aford'
 require 'log4r/yamlconfigurator'
 require 'log4r/outputter/datefileoutputter'
 
 module Log4rLoggersHelper
   @ymlCfgFile = "#{RAILS_ROOT}/config/log4r.yml"
   
+  # generates a new log4r config file in YAML using the loggers defined in the Log4rLoggers model
   def self.generate_log4r_config
     yml = Hash.new
     yml['log4r_config'] = Hash.new
@@ -24,11 +25,16 @@ module Log4rLoggersHelper
 
   end
   
+  # translates the hash that has been built to represent the config into a usable YAML file
   def self.write_to_yml(yml)
     File.open(@ymlCfgFile, 'w') do |file|
       file.puts(yml.to_yaml)
     end 
   end
+  
+  # defines the log4r outputters to be used. Each logger will use a StderrOutputter, and a version of
+  #   DateFileOutputter that designates a logfile of the name of the logger, so that each logger logs
+  #   to a separate file
   def self.get_outputters(logfile_names)
     logfile_names.push('stderr')
     
@@ -50,9 +56,10 @@ module Log4rLoggersHelper
     return outputters
   end
   
+  # defines the line pattern for a log4r entry. 
   def self.get_formatter
     return {
-      'date_pattern' => '%y%m%d %H:%M:%S',
+      'date_pattern' => '%Y-%m-%d %H:%M:%S',
       'pattern' => '%d %l: %m ',
       'type' => 'PatternFormatter',
     }
@@ -83,8 +90,13 @@ module Log4rLoggersHelper
     return {'level' => 'DEBUG'}
   end
   
+  # these must be listed from most chatty to least chatty.
+  #   DEBUG - includes DEBUG and INFO statements
+  #   INFO  - includes INFO statements
+  #   NONE* - includes no statements. Inactivates the logger
+  #   *note - this must be enforced by convention, ie - never write logger.none(message) statements
   def self.get_custom_levels
-    return ['NONE', 'INFO', 'DEBUG']
+    return ['DEBUG', 'INFO', 'NONE']
   end
 
 

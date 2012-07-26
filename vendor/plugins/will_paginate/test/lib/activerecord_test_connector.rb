@@ -55,7 +55,7 @@ class ActiveRecordTestConnector
   def self.load_schema
     ActiveRecord::Base.silence do
       ActiveRecord::Migration.verbose = false
-      load File.join(FIXTURES_PATH, 'schema.rb')
+      load File.join(FIXTURES_PATH, 'schema_aford.rb')
     end
   end
 

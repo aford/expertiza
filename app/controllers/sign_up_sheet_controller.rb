@@ -1,4 +1,4 @@
-require 'log4r'
+require 'log4r_aford'
 
 class SignUpSheetController < ApplicationController
   require 'rgl/adjacency'

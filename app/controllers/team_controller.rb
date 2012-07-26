@@ -1,4 +1,4 @@
-require 'log4r'
+require 'log4r_aford'
 
 class TeamController < ApplicationController
  auto_complete_for :user, :name

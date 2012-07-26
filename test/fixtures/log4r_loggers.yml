@@ -1,9 +1,7 @@
 # Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
 
-one:
-  name: MyString
-  isEnabled: false
-
-two:
-  name: MyString
-  isEnabled: false
+<% 1.upto(3) do |i| %>
+logger<%= i %>:
+  name: "Logger_#{i}"
+  log_level: "NONE"
+<% end %>

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 --- 
 log4r_config: 
   loggers: 
@@ -82,3 +83,73 @@ log4r_config:
       level: DEBUG
     root: 
       level: DEBUG
+=======
+--- 
+log4r_config: 
+  pre_config: 
+    global: 
+      level: DEBUG
+    root: 
+      level: DEBUG
+    custom_levels: 
+    - DEBUG
+    - INFO
+    - NONE
+  outputters: 
+  - dirname: "#{RAILS_ROOT}/log"
+    level: DEBUG
+    name: Logger_#{i}
+    type: DateFileOutputter
+    formatter: 
+      pattern: "%d %l: %m "
+      date_pattern: "%Y-%m-%d %H:%M:%S"
+      type: PatternFormatter
+    filename: Logger_#{i}.log
+  - dirname: "#{RAILS_ROOT}/log"
+    level: DEBUG
+    name: logger2
+    type: DateFileOutputter
+    formatter: 
+      pattern: "%d %l: %m "
+      date_pattern: "%Y-%m-%d %H:%M:%S"
+      type: PatternFormatter
+    filename: logger2.log
+  - dirname: "#{RAILS_ROOT}/log"
+    level: DEBUG
+    name: Logger_#{i}
+    type: DateFileOutputter
+    formatter: 
+      pattern: "%d %l: %m "
+      date_pattern: "%Y-%m-%d %H:%M:%S"
+      type: PatternFormatter
+    filename: Logger_#{i}.log
+  - level: DEBUG
+    name: stderr
+    type: StderrOutputter
+    formatter: 
+      pattern: "%d %l: %m "
+      date_pattern: "%Y-%m-%d %H:%M:%S"
+      type: PatternFormatter
+  loggers: 
+  - level: NONE
+    trace: "false"
+    name: Logger_#{i}
+    outputters: 
+    - stderr
+    - Logger_#{i}
+    additive: "false"
+  - level: DEBUG
+    trace: "false"
+    name: logger2
+    outputters: 
+    - stderr
+    - logger2
+    additive: "false"
+  - level: NONE
+    trace: "false"
+    name: Logger_#{i}
+    outputters: 
+    - stderr
+    - Logger_#{i}
+    additive: "false"
+>>>>>>> 06f46e63c5f7d5a94ba3a5773e9759a77e1dc8d9
