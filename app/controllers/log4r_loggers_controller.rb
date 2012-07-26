@@ -1,4 +1,4 @@
-require 'log4r_aford'
+require 'log4r'
 # include Log4r
 class Log4rLoggersController < ApplicationController
   # GET /log4r_loggers

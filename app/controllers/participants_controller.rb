@@ -1,4 +1,4 @@
-require 'log4r_aford'
+require 'log4r'
 
 class ParticipantsController < ApplicationController
   auto_complete_for :user, :name
