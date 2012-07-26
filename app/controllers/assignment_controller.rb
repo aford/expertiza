@@ -1,7 +1,16 @@
+require 'log4r'
+
 class AssignmentController < ApplicationController
   auto_complete_for :user, :name
   before_filter :authorize
-  
+
+  # set up logger
+  @@AssignmentLogger = Log4r::Logger['assignments']
+  if @@AssignmentLogger.nil?
+    #if logger not in config, create new to avoid startup errors.
+    @@AssignmentLogger = Log4r::Logger.new 'assignments'
+  end
+
   def copy
     Assignment.record_timestamps = false
     #creating a copy of an assignment; along with the dates and submission directory too
@@ -41,6 +50,7 @@ class AssignmentController < ApplicationController
   end  
   
   def new
+    @@AssignmentLogger.debug("Entering #{self.class.name}::#{__method__}")
     #creating new assignment and setting default values using helper functions
     if params[:parent_id]
       @course = Course.find(params[:parent_id])           
@@ -51,7 +61,8 @@ class AssignmentController < ApplicationController
     @wiki_types = WikiType.find(:all)
     @private = params[:private] == true        
     #calling the defalut values mathods
-    get_limits_and_weights 
+    get_limits_and_weights
+    @@AssignmentLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
   
   
@@ -66,7 +77,8 @@ class AssignmentController < ApplicationController
   
   def create
     # The Assignment Directory field to be filled in is the path relative to the instructor's home directory (named after his user.name)
-    # However, when an administrator creates an assignment, (s)he needs to preface the path with the user.name of the instructor whose assignment it is.    
+    # However, when an administrator creates an assignment, (s)he needs to preface the path with the user.name of the instructor whose assignment it is.
+    @@AssignmentLogger.debug("Entering #{self.class.name}::#{__method__}")
     @assignment = Assignment.new(params[:assignment])    
     @user =  ApplicationHelper::get_user_role(session[:user])
     @user = session[:user]
@@ -174,15 +186,19 @@ class AssignmentController < ApplicationController
       @wiki_types = WikiType.find(:all)
       render :action => 'new'
     end
-    
+
+    @@AssignmentLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
   
   def edit
+    @@AssignmentLogger.debug("Entering #{self.class.name}::#{__method__}")
     @assignment = Assignment.find(params[:id])
     prepare_to_edit
+    @@AssignmentLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
   
   def prepare_to_edit
+    @@AssignmentLogger.debug("Entering #{self.class.name}::#{__method__}")
     if !@assignment.days_between_submissions.nil?
       @weeks = @assignment.days_between_submissions/7
       @days = @assignment.days_between_submissions - @weeks*7
@@ -193,6 +209,7 @@ class AssignmentController < ApplicationController
 
     get_limits_and_weights    
     @wiki_types = WikiType.find(:all)
+    @@AssignmentLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
   
   def define_instructor_notification_limit(assignment_id, questionnaire_id, limit)
@@ -209,16 +226,19 @@ class AssignmentController < ApplicationController
   end  
   
   def set_questionnaires
+    @@AssignmentLogger.debug("Entering #{self.class.name}::#{__method__}")
     @assignment.questionnaires = Array.new
     params[:questionnaires].each{
       | key, value |       
       if value.to_i > 0 and (q = Questionnaire.find(value))
         @assignment.questionnaires << q
      end
-    }     
+    }
+    @@AssignmentLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end   
   
-  def get_limits_and_weights 
+  def get_limits_and_weights
+    @@AssignmentLogger.debug("Entering #{self.class.name}::#{__method__}")
     @limits = Hash.new   
     @weights = Hash.new
     
@@ -251,10 +271,12 @@ class AssignmentController < ApplicationController
       aq = AssignmentQuestionnaire.find_by_assignment_id_and_questionnaire_id(@assignment.id, questionnaire.id)
       @limits[questionnaire.symbol] = aq.notification_limit   
       @weights[questionnaire.symbol] = aq.questionnaire_weight
-    }             
+    }
+    @@AssignmentLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
   
   def set_limits_and_weights
+    @@AssignmentLogger.debug("Entering #{self.class.name}::#{__method__}")
     if session[:user].role.name == "Teaching Assistant"
       user_id = TA.get_my_instructor(session[:user]).id
     else
@@ -274,9 +296,11 @@ class AssignmentController < ApplicationController
       aq.update_attribute('questionnaire_weight',params[:weights][questionnaire.symbol])
       aq.update_attribute('user_id',user_id)
     }
+    @@AssignmentLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
   
-  def update      
+  def update
+    @@AssignmentLogger.debug("Entering #{self.class.name}::#{__method__}")
     if params[:assignment][:course_id]
       begin
         Course.find(params[:assignment][:course_id]).copy_participants(params[:id])
@@ -333,7 +357,8 @@ class AssignmentController < ApplicationController
         end
      
         flash[:notice] = 'Assignment was successfully updated.'
-        redirect_to :action => 'show', :id => @assignment                  
+        redirect_to :action => 'show', :id => @assignment
+        @@AssignmentLogger.info("Assignment #{@assignment.name} has been updated.")
      
       rescue
         flash[:error] = $!
@@ -343,7 +368,8 @@ class AssignmentController < ApplicationController
     else # Simply refresh the page
       @wiki_types = WikiType.find(:all)
       render :action => 'edit'
-    end    
+    end
+    @@AssignmentLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
   
   def show
@@ -351,6 +377,7 @@ class AssignmentController < ApplicationController
   end
   
   def delete
+    @@AssignmentLogger.debug("Entering #{self.class.name}::#{__method__}")
     assignment = Assignment.find(params[:id])
     
     # If the assignment is already deleted, go back to the list of assignments
@@ -366,6 +393,7 @@ class AssignmentController < ApplicationController
      
         @a.destroy
         flash[:notice] = "The assignment is deleted"
+        @@AssignmentLogger.info("Assignment #{assignment.name} deleted by #{@user.name}.")
       rescue
         url_yes = url_for :action => 'delete', :id => params[:id], :force => 1
         url_no  = url_for :action => 'delete', :id => params[:id]
@@ -375,6 +403,7 @@ class AssignmentController < ApplicationController
     end
     
     redirect_to :controller => 'tree_display', :action => 'list'
+    @@AssignmentLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end  
   
   def list

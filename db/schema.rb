@@ -11,6 +11,13 @@
 
 ActiveRecord::Schema.define(:version => 20120720233603) do
 
+  create_table "assignment_groups", :force => true do |t|
+    t.string   "name"
+    t.integer  "xp"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "assignment_questionnaires", :force => true do |t|
     t.integer "assignment_id"
     t.integer "questionnaire_id"

@@ -1,3 +1,5 @@
+require 'log4r'
+
 class SignUpSheetController < ApplicationController
   require 'rgl/adjacency'
   require 'rgl/dot'
@@ -9,7 +11,15 @@ class SignUpSheetController < ApplicationController
   verify :method => :post, :only => [:destroy, :create, :update],
          :redirect_to => {:action => :list}
 
-  def add_signup_topics_staggered
+  # set up logger
+  @@AssignmentLogger = Log4r::Logger['assignments']
+  if @@AssignmentLogger.nil?
+    #if logger not in config, create new to avoid startup errors.
+    @@AssignmentLogger = Log4r::Logger.new 'assignments'
+  end
+
+  def add_signup_topics_staggeredsa
+    @@AssignmentLogger.debug("Entering #{self.class.name}::#{__method__}")
     load_add_signup_topics(params[:id])
 
     @review_rounds = Assignment.find(params[:id]).get_review_rounds
@@ -60,10 +70,13 @@ class SignUpSheetController < ApplicationController
         i = i + 1
       }
     end
+    @@AssignmentLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
 
   def add_signup_topics
+    @@AssignmentLogger.debug("Entering #{self.class.name}::#{__method__}")
     load_add_signup_topics(params[:id])
+    @@AssignmentLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
 
   def view_publishing_rights
@@ -71,6 +84,7 @@ class SignUpSheetController < ApplicationController
   end
 
   def load_add_signup_topics(assignment_id)
+    @@AssignmentLogger.debug("Entering #{self.class.name}::#{__method__}")
     @id = assignment_id
     @sign_up_topics = SignUpTopic.find(:all, :conditions => ['assignment_id = ?', assignment_id])
     @slots_filled = SignUpTopic.find_slots_filled(assignment_id)
@@ -82,11 +96,14 @@ class SignUpSheetController < ApplicationController
     else
       @participants = SignedUpUser.find_team_participants(assignment_id)
     end
+    @@AssignmentLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
 
   def new
+    @@AssignmentLogger.debug("Entering #{self.class.name}::#{__method__}")
     @id = params[:id]
     @sign_up_topic = SignUpTopic.new
+    @@AssignmentLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
 
   #This method is used to create signup topics
@@ -94,6 +111,7 @@ class SignUpSheetController < ApplicationController
   #that assignment id will virtually be the signup sheet id as well as we have assumed 
   #that every assignment will have only one signup sheet
   def create
+    @@AssignmentLogger.debug("Entering #{self.class.name}::#{__method__}")
     topic = SignUpTopic.find_by_topic_name_and_assignment_id(params[:topic][:topic_name], params[:id])
 
     #if the topic already exists then update
@@ -138,11 +156,13 @@ class SignUpSheetController < ApplicationController
       if @sign_up_topic.save
         #NotificationLimit.create(:topic_id => @sign_up_topic.id)
         flash[:notice] = 'Topic was successfully created.'
+        @@AssignmentLogger.info("Signup topic #{@sign_up_topic.topic_name} created.")
         redirect_to_sign_up(params[:id])
       else
         render :action => 'new', :id => params[:id]
       end
     end
+    @@AssignmentLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
 
   def redirect_to_sign_up(assignment_id)
@@ -156,10 +176,12 @@ class SignUpSheetController < ApplicationController
 
   #This method is used to delete signup topics
   def delete
+    @@AssignmentLogger.debug("Entering #{self.class.name}::#{__method__}")
     @topic = SignUpTopic.find(params[:id])
 
     if !@topic.nil?
       @topic.destroy
+      @@AssignmentLogger.info("Signup topic #{@topic.topic_name} deleted.")
     else
       flash[:error] = "Topic could not be deleted"
     end
@@ -172,14 +194,18 @@ class SignUpSheetController < ApplicationController
       end
     end
     redirect_to_sign_up(params[:assignment_id])
+    @@AssignmentLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
 
   def edit
+    @@AssignmentLogger.debug("Entering #{self.class.name}::#{__method__}")
     @topic = SignUpTopic.find(params[:id])
     @assignment_id = params[:assignment_id]
+    @@AssignmentLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
 
   def update
+    @@AssignmentLogger.debug("Entering #{self.class.name}::#{__method__}")
     topic = SignUpTopic.find(params[:id])
 
     if !topic.nil?
@@ -203,13 +229,16 @@ class SignUpSheetController < ApplicationController
       topic.category = params[:topic][:category]
       topic.topic_name = params[:topic][:topic_name]
       topic.save
+      @@AssignmentLogger.info("Topic #{topic.topic_name} has been updated.")
     else
       flash[:error] = "Topic could not be updated"
     end
     redirect_to_sign_up(params[:assignment_id])
+    @@AssignmentLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
 
   def signup_topics
+    @@AssignmentLogger.debug("Entering #{self.class.name}::#{__method__}")
     @assignment_id = params[:id]
     @sign_up_topics = SignUpTopic.find(:all, :conditions => ['assignment_id = ?', params[:id]])
     @slots_filled = SignUpTopic.find_slots_filled(params[:id])
@@ -239,6 +268,7 @@ class SignUpSheetController < ApplicationController
     else
       @selected_topics = otherConfirmedTopicforUser(params[:id], session[:user].id)
     end
+    @@AssignmentLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
 
   #this function is used to delete a previous signup
@@ -299,6 +329,7 @@ class SignUpSheetController < ApplicationController
   end
 
   def signup
+    @@AssignmentLogger.debug("Entering #{self.class.name}::#{__method__}")
     #find the assignment to which user is signing up
     assignment = Assignment.find(params[:assignment_id])
 
@@ -321,6 +352,7 @@ class SignUpSheetController < ApplicationController
       confirmationStatus = confirmTopic(session[:user].id, params[:id], params[:assignment_id])
     end
     redirect_to :action => 'signup_topics', :id => params[:assignment_id]
+    @@AssignmentLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
 
   # When using this method when creating fields, update race conditions by using db transactions
@@ -415,6 +447,7 @@ class SignUpSheetController < ApplicationController
   end
 
   def create_team_users(user, team_id)
+    @@AssignmentLogger.debug("Entering #{self.class.name}::#{__method__}")
     #user = User.find_by_name(params[:user][:name].strip)
     if !user
       urlCreate = url_for :controller => 'users', :action => 'new'
@@ -422,6 +455,7 @@ class SignUpSheetController < ApplicationController
     end
     team = Team.find(team_id)
     team.add_member(user)
+    @@AssignmentLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
 
   def has_user(user, team_id)
@@ -559,6 +593,7 @@ class SignUpSheetController < ApplicationController
   end
 
   def create_topic_deadline(due_date, offset, topic_id)
+    @@AssignmentLogger.debug("Entering #{self.class.name}::#{__method__}")
     topic_deadline = TopicDeadline.new
     topic_deadline.topic_id = topic_id
     topic_deadline.due_at = DateTime.parse(due_date.due_at.to_s) + offset.to_i
@@ -571,6 +606,8 @@ class SignUpSheetController < ApplicationController
     topic_deadline.review_of_review_allowed_id = due_date.review_of_review_allowed_id
     topic_deadline.round = due_date.round
     topic_deadline.save
+    @@AssignmentLogger.info("Topic deadline id #{topic_deadline.topic_id} has been created with due data #{topic_deadline.due_at}")
+    @@AssignmentLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
 
   def set_start_due_date(assignment_id, set_of_topics)

@@ -1,6 +1,15 @@
+require 'log4r'
+
 class ParticipantsController < ApplicationController
   auto_complete_for :user, :name
-  
+
+  # set up logger
+  @@AssignmentLogger = Log4r::Logger['assignments']
+  if @@AssignmentLogger.nil?
+    #if logger not in config, create new to avoid startup errors.
+    @@AssignmentLogger = Log4r::Logger.new 'assignments'
+  end
+
   def list
     @root_node = Object.const_get(params[:model]+"Node").find_by_node_object_id(params[:id])     
     @parent = Object.const_get(params[:model]).find(params[:id])
@@ -8,24 +17,29 @@ class ParticipantsController < ApplicationController
     @model = params[:model]    
   end
   
-  def add   
+  def add
+    @@AssignmentLogger.debug("Entering #{self.class.name}::#{__method__}")
     curr_object = Object.const_get(params[:model]).find(params[:id])    
     begin
       curr_object.add_participant(params[:user][:name])
+      @@AssignmentLogger.info("Pariticpant #{params[:user][:name]} added to assignment.")
     rescue
       url_new_user = url_for :controller => 'users', :action => 'new'
       flash[:error] = "User #{params[:user][:name]} does not exist. Would you like to <a href = '#{url_new_user}'>create this user?</a>"
     end
     redirect_to :action => 'list', :id => curr_object.id, :model => params[:model]
+    @@AssignmentLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
      
   def delete
+    @@AssignmentLogger.debug("Entering #{self.class.name}::#{__method__}")
     participant = Participant.find(params[:id])
     name = participant.user.name
     parent_id = participant.parent_id    
     begin
       participant.delete(params[:force])
       flash[:note] = "#{name} has been removed as a participant."
+      @@AssignmentLogger.info("Participant #{name} removed from assignment id #{parent_id}.")
     rescue      
       url_yes = url_for :action => 'delete', :id => params[:id], :force => 1
       url_show = url_for :action => 'delete_display', :id => params[:id], :model => participant.class.to_s.gsub("Participant","")
@@ -33,6 +47,7 @@ class ParticipantsController < ApplicationController
       flash[:error] = "A delete action failed: At least one (1) review mapping or team membership exist for this participant. <br/><a href='#{url_yes}'>Delete this participant</a>&nbsp;|&nbsp;<a href='#{url_show}'>Show me the associated items</a>|&nbsp;<a href='#{url_no}'>Do nothing</a><BR/>"                  
     end
     redirect_to :action => 'list', :id => parent_id, :model => participant.class.to_s.gsub("Participant","")
+    @@AssignmentLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end  
   
   def delete_display

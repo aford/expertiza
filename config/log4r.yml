@@ -1,84 +1,84 @@
 --- 
 log4r_config: 
   loggers: 
-  - level: INFO
+  - level: DEBUG
     trace: "false"
+    additive: "false"
     outputters: 
     - stderr
     - assignment
-    additive: "false"
     name: assignment
   - level: NONE
     trace: "false"
+    additive: "false"
     outputters: 
     - stderr
     - team
-    additive: "false"
     name: team
   - level: NONE
     trace: "false"
+    additive: "false"
     outputters: 
     - stderr
     - review
-    additive: "false"
     name: review
   - level: NONE
     trace: "false"
+    additive: "false"
     outputters: 
     - stderr
     - responses
-    additive: "false"
     name: responses
-  pre_config: 
-    root: 
-      level: DEBUG
-    global: 
-      level: DEBUG
-    custom_levels: 
-    - DEBUG
-    - INFO
-    - NONE
   outputters: 
   - dirname: "#{RAILS_ROOT}/log"
-    filename: assignment.log
     formatter: 
+      date_pattern: "%y%m%d %H:%M:%S"
       pattern: "%d %l: %m "
       type: PatternFormatter
-      date_pattern: "%y%m%d %H:%M:%S"
     level: DEBUG
+    filename: assignment.log
     type: DateFileOutputter
     name: assignment
   - dirname: "#{RAILS_ROOT}/log"
-    filename: team.log
     formatter: 
+      date_pattern: "%y%m%d %H:%M:%S"
       pattern: "%d %l: %m "
       type: PatternFormatter
-      date_pattern: "%y%m%d %H:%M:%S"
     level: DEBUG
+    filename: team.log
     type: DateFileOutputter
     name: team
   - dirname: "#{RAILS_ROOT}/log"
-    filename: review.log
     formatter: 
+      date_pattern: "%y%m%d %H:%M:%S"
       pattern: "%d %l: %m "
       type: PatternFormatter
-      date_pattern: "%y%m%d %H:%M:%S"
     level: DEBUG
+    filename: review.log
     type: DateFileOutputter
     name: review
   - dirname: "#{RAILS_ROOT}/log"
-    filename: responses.log
     formatter: 
+      date_pattern: "%y%m%d %H:%M:%S"
       pattern: "%d %l: %m "
       type: PatternFormatter
-      date_pattern: "%y%m%d %H:%M:%S"
     level: DEBUG
+    filename: responses.log
     type: DateFileOutputter
     name: responses
   - formatter: 
+      date_pattern: "%y%m%d %H:%M:%S"
       pattern: "%d %l: %m "
       type: PatternFormatter
-      date_pattern: "%y%m%d %H:%M:%S"
     level: DEBUG
     type: StderrOutputter
     name: stderr
+  pre_config: 
+    custom_levels: 
+    - NONE
+    - INFO
+    - DEBUG
+    global: 
+      level: DEBUG
+    root: 
+      level: DEBUG

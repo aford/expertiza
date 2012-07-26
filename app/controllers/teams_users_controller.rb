@@ -1,4 +1,13 @@
-class TeamsUsersController < ApplicationController  
+require 'log4r'
+
+class TeamsUsersController < ApplicationController
+
+  # set up logger
+  @@TeamLogger = Log4r::Logger['teams']
+  if @@TeamLogger.nil?
+    #if logger not in config, create new to avoid startup errors.
+    @@TeamLogger = Log4r::Logger.new 'teams'
+  end
 
   def auto_complete_for_user_name      
     team = Team.find(session[:team_id])    
@@ -13,10 +22,13 @@ class TeamsUsersController < ApplicationController
   end
   
   def new
-    @team = Team.find_by_id(params[:id])    
+    @@TeamLogger.debug("Entering #{self.class.name}::#{__method__}")
+    @team = Team.find_by_id(params[:id])
+    @@TeamLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
   
-  def create    
+  def create
+    @@TeamLogger.debug("Entering #{self.class.name}::#{__method__}")
     user = User.find_by_name(params[:user][:name].strip)
     if !user
       urlCreate = url_for :controller => 'users', :action => 'new'      
@@ -25,17 +37,22 @@ class TeamsUsersController < ApplicationController
     team = Team.find_by_id(params[:id])    
     
       team.add_member(user)
+    @@TeamLogger.info("Team #{team.name} added user #{user.name}.")
     
     #  flash[:error] = $!
     #end
     redirect_to :controller => 'team', :action => 'list', :id => team.parent_id
+    @@TeamLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
         
   def delete
+    @@TeamLogger.debug("Entering #{self.class.name}::#{__method__}")
     teamuser = TeamsUser.find(params[:id])   
     parent_id = Team.find(teamuser.team_id).parent_id
-    teamuser.destroy    
-    redirect_to :controller => 'team', :action => 'list', :id => parent_id   
+    teamuser.destroy
+    @@TeamLogger.info("Team user #{teamuser.name} deleted from parent_id #{parent_id}.")
+    redirect_to :controller => 'team', :action => 'list', :id => parent_id
+    @@TeamLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end    
 
   def delete_selected
