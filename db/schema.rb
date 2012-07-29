@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # This file is auto-generated from the current state of the database. Instead of editing this file, 
 # please use the migrations feature of Active Record to incrementally modify your database, and
 # then regenerate this schema definition.
@@ -1105,4 +1104,3 @@ ActiveRecord::Schema.define(:version => 20120720233603) do
   end
 
 end
->>>>>>> 06f46e63c5f7d5a94ba3a5773e9759a77e1dc8d9
