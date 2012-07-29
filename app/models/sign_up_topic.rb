@@ -1,3 +1,5 @@
+require 'log4r'
+
 class SignUpTopic < ActiveRecord::Base
   has_many :signed_up_users, :foreign_key => 'topic_id', :dependent => :destroy
   has_many :topic_dependencies, :foreign_key => 'topic_id', :dependent => :destroy
@@ -5,6 +7,13 @@ class SignUpTopic < ActiveRecord::Base
   has_many :assignment_participants, :foreign_key => 'topic_id'
 
   belongs_to :assignment
+
+  # set up logger
+  @@TopicLogger = Log4r::Logger['topics']
+  if @@TopicLogger.nil?
+    #if logger not in config, create new to avoid startup errors.
+    @@TopicLogger = Log4r::Logger.new 'topics'
+  end
 
   def get_team_id_from_topic_id(user_id)
     return find_by_sql("select t.id from teams t,teams_users u where t.id=u.team_id and u.user_id = 5");
@@ -58,17 +67,21 @@ class SignUpTopic < ActiveRecord::Base
 
 
   def self.cancel_all_waitlists(creator_id, assignment_id)
+    @@TopicLogger.debug("Entering #{self.class.name}::#{__method__}")
     waitlisted_topics = SignUpTopic.find_waitlisted_topics(assignment_id,creator_id)
     if !waitlisted_topics.nil?
       for waitlisted_topic in waitlisted_topics
         entry = SignedUpUser.find(waitlisted_topic.id)
         entry.destroy
+        @@TopicLogger.info("Destroyed waitlist entry #{entry.id}.")
       end
     end
 
+    @@TopicLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
 
   def update_waitlisted_users(max_choosers)
+    @@TopicLogger.debug("Entering #{self.class.name}::#{__method__}")
     num_of_users_promotable = max_choosers.to_i - self.max_choosers.to_i
 
     num_of_users_promotable.times {
@@ -76,6 +89,7 @@ class SignUpTopic < ActiveRecord::Base
       if !next_wait_listed_user.nil?
         next_wait_listed_user.is_waitlisted = false
         next_wait_listed_user.save
+        @@TopicLogger.info("Waitlist updated with user #{next_wait_listed_user.id}.")
 
         #update participants
         assignment = Assignment.find(self.assignment_id)
@@ -89,5 +103,6 @@ class SignUpTopic < ActiveRecord::Base
         participant.update_topic_id(self.id)
       end
     }
+    @@TopicLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
 end

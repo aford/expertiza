@@ -1,6 +1,16 @@
+require 'log4r'
+
 class StudentReviewController < ApplicationController
-  
-  def list 
+
+  # set up logger
+  @@ReviewLogger = Log4r::Logger['reviews']
+  if @@ReviewLogger.nil?
+    #if logger not in config, create new to avoid startup errors.
+    @@ReviewLogger = Log4r::Logger.new 'reviews'
+  end
+
+  def list
+    @@ReviewLogger.debug("Entering #{self.class.name}::#{__method__}")
     @participant = AssignmentParticipant.find(params[:id])
     return unless current_user_id?(@participant.user_id)
     @assignment  = @participant.assignment
@@ -66,6 +76,6 @@ class StudentReviewController < ApplicationController
         end
       end
     end
-  end  
-  
+  end
+  @@ReviewLogger.debug("Leaving #{self.class.name}::#{__method__}")
 end

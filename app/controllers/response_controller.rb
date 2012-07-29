@@ -11,6 +11,13 @@ class ResponseController < ApplicationController
     # if logger not in config, create new to avoid startup errors.
     @@ResponseLogger = Log4r::Logger.new 'responses'
   end
+
+  # set up logger
+  @@ReviewLogger = Log4r::Logger['reviews']
+  if @@ReviewLogger.nil?
+    #if logger not in config, create new to avoid startup errors.
+    @@ReviewLogger = Log4r::Logger.new 'reviews'
+  end
   
   def delete
     @@ResponseLogger.debug("Entering #{self.class.name}::#{__method__}")
@@ -137,6 +144,7 @@ class ResponseController < ApplicationController
   
   def edit
     @@ResponseLogger.debug("Entering #{self.class.name}::#{__method__}")
+    @@ReviewLogger.debug("Entering #{self.class.name}::#{__method__}")
     @header = "Edit"
     @next_action = "update"
     @return = params[:return]
@@ -176,6 +184,7 @@ class ResponseController < ApplicationController
       render :action => 'response'
     end
     @@ResponseLogger.debug("Leaving #{self.class.name}::#{__method__}")
+    @@ReviewLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
   
   def redirect_when_disallowed(response)
@@ -299,6 +308,7 @@ class ResponseController < ApplicationController
   
   def new
     @@ResponseLogger.debug("Entering #{self.class.name}::#{__method__}")
+    @@ReviewLogger.debug("Entering #{self.class.name}::#{__method__}")
     @header = "New"
     @next_action = "create"    
     @feedback = params[:feedback]
@@ -331,9 +341,11 @@ class ResponseController < ApplicationController
       render :action => 'response'
     end
     @@ResponseLogger.debug("Leaving #{self.class.name}::#{__method__}")
+    @@ReviewLogger.debug("Leaving #{self.class.name}::#{__method__}")
    end
   
-  def create     
+  def create
+    @@ReviewLogger.debug("Entering #{self.class.name}::#{__method__}")
     @@ResponseLogger.debug("Entering #{self.class.name}::#{__method__}")
     @map = ResponseMap.find(params[:id])
     @res = 0
@@ -388,6 +400,7 @@ class ResponseController < ApplicationController
     end
     redirect_to :controller => 'response', :action => 'saving', :id => @map.id, :return => params[:return], :msg => msg, :error_msg => error_msg
     @@ResponseLogger.debug("Leaving #{self.class.name}::#{__method__}")
+    @@ReviewLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end      
   
   def custom_create

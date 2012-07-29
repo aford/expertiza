@@ -40,26 +40,26 @@ Rails::Initializer.run do |config|
   # config.i18n.default_locale = :de
 
   config.action_controller.session = {
-       :key => 'pg_session',
-       :secret => '3d70fee70cddd63552e8dd6ae6c788060af8fb015da5fef83d368abf37aa10c112d842d7c038420845109147779552cdd687ec4e2034cec3046dc439d8a468e'
+      :key => 'pg_session',
+      :secret => '3d70fee70cddd63552e8dd6ae6c788060af8fb015da5fef83d368abf37aa10c112d842d7c038420845109147779552cdd687ec4e2034cec3046dc439d8a468e'
   }
 
   config.action_controller.session_store = :active_record_store
-  
+
   if RAILS_ENV == 'production'
     config.action_mailer.delivery_method = :smtp
     config.action_mailer.smtp_settings = {
-      :address => "smtp.ncsu.edu",
-      :port => 25,
-      :domain => "localhost"
+        :address => "smtp.ncsu.edu",
+        :port => 25,
+        :domain => "localhost"
     }
   end
   if RAILS_ENV == 'test'
     config.action_mailer.delivery_method = :smtp
     config.action_mailer.smtp_settings = {
-      :address => "smtp.ncsu.edu",
-      :port => 25,
-      :domain => "localhost"
+        :address => "smtp.ncsu.edu",
+        :port => 25,
+        :domain => "localhost"
     }
   end
 end

@@ -1,6 +1,15 @@
+require 'log4r'
+
 class StudentTeamController < ApplicationController
   auto_complete_for :user, :name
-   
+
+  # set up logger
+  @@TeamLogger = Log4r::Logger['teams']
+  if @@TeamLogger.nil?
+    #if logger not in config, create new to avoid startup errors.
+    @@TeamLogger = Log4r::Logger.new 'teams'
+  end
+
   def view
     @student = AssignmentParticipant.find(params[:id])
     return unless current_user_id?(@student.user_id)
@@ -10,6 +19,7 @@ class StudentTeamController < ApplicationController
   end
    
   def create
+    @@TeamLogger.debug("Entering #{self.class.name}::#{__method__}")
     @student = AssignmentParticipant.find(params[:id])
     return unless current_user_id?(@student.user_id)
 
@@ -22,21 +32,26 @@ class StudentTeamController < ApplicationController
       parent = AssignmentNode.find_by_node_object_id(@student.parent_id)
       TeamNode.create(:parent_id => parent.id, :node_object_id => @team.id)
       user = User.find(@student.user_id)
-      @team.add_member(user)      
+      @team.add_member(user)
+      @@TeamLogger.info("Created team #{@team.name} with user #{user.name}.")
       redirect_to :controller => 'student_team', :action => 'view' , :id=> @student.id
     else
       flash[:notice] = 'Team name is already in use.'
       redirect_to :controller => 'student_team', :action => 'view' , :id=> @student.id
-    end 
+    end
+    @@TeamLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
   
-  def edit 
+  def edit
+    @@TeamLogger.debug("Entering #{self.class.name}::#{__method__}")
     @team = AssignmentTeam.find_by_id(params[:team_id])
     @student = AssignmentParticipant.find(params[:student_id])
     return unless current_user_id?(@student.user_id)
+    @@TeamLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
   
   def update
+    @@TeamLogger.debug("Entering #{self.class.name}::#{__method__}")
     @team = AssignmentTeam.find_by_id(params[:team_id])
     check = AssignmentTeam.find(:all, :conditions => ["name =? and parent_id =?", params[:team][:name], @team.parent_id])    
     if (check.length == 0)
@@ -48,7 +63,8 @@ class StudentTeamController < ApplicationController
     else
       flash[:notice] = 'Team name is already in use.'
       redirect_to :controller =>'student_team', :action => 'edit', :team_id =>params[:team_id], :student_id => params[:student_id]
-    end 
+    end
+    @@TeamLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
 
   def advertise_for_partners
@@ -66,6 +82,7 @@ class StudentTeamController < ApplicationController
   end
 
   def leave
+    @@TeamLogger.debug("Entering #{self.class.name}::#{__method__}")
     @student = AssignmentParticipant.find(params[:student_id])
     return unless current_user_id?(@student.user_id)
     
@@ -113,6 +130,7 @@ class StudentTeamController < ApplicationController
     @student.save
     
     redirect_to :controller => 'student_team', :action => 'view' , :id => @student.id
+    @@TeamLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
   
   def review

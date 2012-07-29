@@ -1,9 +1,18 @@
+require 'log4r'
+
 class ReviewMappingController < ApplicationController
   auto_complete_for :user, :name
   use_google_charts
   helper :dynamic_review_assignment
   helper :submitted_content
-  
+
+  # set up logger
+  @@ReviewLogger = Log4r::Logger['reviews']
+  if @@ReviewLogger.nil?
+    #if logger not in config, create new to avoid startup errors.
+    @@ReviewLogger = Log4r::Logger.new 'reviews'
+  end
+
   def auto_complete_for_user_name
     name = params[:user][:name]+"%"
     assignment_id = session[:contributor].parent_id
@@ -24,7 +33,8 @@ class ReviewMappingController < ApplicationController
     @mapping = ResponseMap.find(params[:id])    
   end  
   
-  def add_reviewer 
+  def add_reviewer
+    @@ReviewLogger.debug("Entering #{self.class.name}::#{__method__}")
     assignment = Assignment.find(params[:id])  
     msg = String.new
     begin
@@ -44,11 +54,13 @@ class ReviewMappingController < ApplicationController
       else
         ParticipantReviewResponseMap.add_reviewer(params[:contributor_id], reviewer.id, assignment.id)
       end
+      @@ReviewLogger.info("Reviewer #{reviewer.name} added for assignment #{assignment.name}.")
 
     rescue
        msg = $!
     end    
-    redirect_to :action => 'list_mappings', :id => assignment.id, :msg => msg    
+    redirect_to :action => 'list_mappings', :id => assignment.id, :msg => msg
+    @@ReviewLogger.debug("Entering #{self.class.name}::#{__method__}")
   end
 
   # Get all the available submissions
@@ -65,6 +77,7 @@ class ReviewMappingController < ApplicationController
   
   # Assign self to a submission
   def add_self_reviewer
+    @@ReviewLogger.debug("Entering #{self.class.name}::#{__method__}")
     assignment = Assignment.find(params[:assignment_id])
     reviewer   = AssignmentParticipant.find_by_user_id_and_parent_id(params[:reviewer_id], assignment.id)
     submission = AssignmentParticipant.find_by_id_and_parent_id(params[:submission_id],assignment.id)
@@ -82,12 +95,14 @@ class ReviewMappingController < ApplicationController
           contributor = AssignmentParticipant.find_by_id_and_parent_id(submission_id, assignment_id)
           ParticipantReviewResponseMap.add_reviewer(contributor.id, reviewer.id, assignment.id)
         end
+        @@ReviewLogger.info("Added review for #{assignment.name} to reviewer #{reviewer.name}.")
         redirect_to :controller => 'student_review', :action => 'list', :id => reviewer.id
       rescue
         redirect_to :controller => 'student_review', :action => 'list', :id => reviewer.id, :msg => $!
       end
   
     end
+    @@ReviewLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end 
 
   #  Looks up the team from the submission.
@@ -109,6 +124,7 @@ class ReviewMappingController < ApplicationController
   end
 
   def assign_reviewer_dynamically
+    @@ReviewLogger.debug("Entering #{self.class.name}::#{__method__}")
     begin
       assignment = Assignment.find(params[:assignment_id])
       reviewer   = AssignmentParticipant.find_by_user_id_and_parent_id(params[:reviewer_id], assignment.id)
@@ -120,29 +136,35 @@ class ReviewMappingController < ApplicationController
       end
 
       assignment.assign_reviewer_dynamically(reviewer, topic)
+      @@ReviewLogger.info("Reviewer #{reviewer.name} selected topic #{topic.id}.")
 
     rescue Exception => e
       flash[:alert] = (e.nil?) ? $! : e
     end
 
     redirect_to :controller => 'student_review', :action => 'list', :id => reviewer.id
+    @@ReviewLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
 
   def assign_metareviewer_dynamically
+    @@ReviewLogger.debug("Entering #{self.class.name}::#{__method__}")
     begin
       assignment   = Assignment.find(params[:assignment_id])
       metareviewer = AssignmentParticipant.find_by_user_id_and_parent_id(params[:metareviewer_id], assignment.id)
 
       assignment.assign_metareviewer_dynamically(metareviewer)
+      @@ReviewLogger.info("Metareviewer #{metareviewer.name} selected assignment #{assignment.id}.")
 
     rescue Exception => e
       flash[:alert] = (e.nil?) ? $! : e
     end
 
     redirect_to :controller => 'student_review', :action => 'list', :id => metareviewer.id
+    @@ReviewLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
 
-  def add_metareviewer    
+  def add_metareviewer
+    @@ReviewLogger.debug("Entering #{self.class.name}::#{__method__}")
     mapping = ResponseMap.find(params[:id])
     begin
       user = User.from_params(params)
@@ -154,11 +176,13 @@ class ReviewMappingController < ApplicationController
       end
       MetareviewResponseMap.create(:reviewed_object_id => mapping.id,
                                    :reviewer_id => reviewer.id,
-                                   :reviewee_id => mapping.reviewer.id)                         
+                                   :reviewee_id => mapping.reviewer.id)
+      @@ReviewLogger.info("Added metareview mapping for #{mapping.reviewer.name}.")
     rescue  
       msg = $!
     end
-    redirect_to :action => 'list_mappings', :id => mapping.assignment.id, :msg => msg                                  
+    redirect_to :action => 'list_mappings', :id => mapping.assignment.id, :msg => msg
+    @@ReviewLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
 
   def get_reviewer(user,assignment,reg_url)
@@ -193,20 +217,24 @@ class ReviewMappingController < ApplicationController
   
  
   def delete_all_reviewers_and_metareviewers
+    @@ReviewLogger.debug("Entering #{self.class.name}::#{__method__}")
     assignment = Assignment.find(params[:id])
 
     failedCount = ResponseMap.delete_mappings(assignment.review_mappings,params[:force])
     if failedCount > 0
       url_yes = url_for :action => 'delete_all_reviewers_and_metareviewers', :id => params[:id], :force => 1
       url_no  = url_for :action => 'delete_all_reviewers_and_metareviewers', :id => params[:id]
-      flash[:error] = "A delete action failed:<br/>#{failedCount} reviews exist for these mappings. Delete these mappings anyway?&nbsp;<a href='#{url_yes}'>Yes</a>&nbsp;|&nbsp;<a href='#{url_no}'>No</a><BR/>"            
+      flash[:error] = "A delete action failed:<br/>#{failedCount} reviews exist for these mappings. Delete these mappings anyway?&nbsp;<a href='#{url_yes}'>Yes</a>&nbsp;|&nbsp;<a href='#{url_no}'>No</a><BR/>"
     else
-      flash[:note] = "All review mappings for this assignment have been deleted."             
+      flash[:note] = "All review mappings for this assignment have been deleted."
+      @@ReviewLogger.info("Deleted all review mappings for assignment #{assignment.name}.")
     end     
-    redirect_to :action => 'list_mappings', :id => params[:id]   
+    redirect_to :action => 'list_mappings', :id => params[:id]
+    @@ReviewLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end  
   
-  def delete_all_reviewers      
+  def delete_all_reviewers
+    @@ReviewLogger.debug("Entering #{self.class.name}::#{__method__}")
     assignment = Assignment.find(params[:id])
     contributor = assignment.get_contributor(params[:contributor_id])
     mappings = contributor.review_mappings
@@ -217,12 +245,15 @@ class ReviewMappingController < ApplicationController
       url_no  = url_for :action => 'delete_all_reviewers', :id => assignment.id, :contributor_id => contributor.id
       flash[:error] = "A delete action failed:<br/>#{failedCount} reviews and/or metareviews exist for these mappings. Delete these mappings anyway?&nbsp;<a href='#{url_yes}'>Yes</a>&nbsp;|&nbsp;<a href='#{url_no}'>No</a><BR/>"            
     else
-      flash[:note] = "All review mappings for \""+contributor.name+"\" have been deleted."             
+      flash[:note] = "All review mappings for \""+contributor.name+"\" have been deleted."
+      @@ReviewLogger.info("Deleted all reviewers for #{contributor.name}.")
     end      
     redirect_to :action => 'list_mappings', :id => assignment.id
+    @@ReviewLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
   
-  def delete_all_metareviewers    
+  def delete_all_metareviewers
+    @@ReviewLogger.debug("Entering #{self.class.name}::#{__method__}")
     mapping = ResponseMap.find(params[:id])    
     mmappings = MetareviewResponseMap.find_all_by_reviewed_object_id(mapping.id)
 
@@ -232,35 +263,43 @@ class ReviewMappingController < ApplicationController
       url_no  = url_for :action => 'delete_all_metareviewers', :id => mapping.id
       flash[:error] = "A delete action failed:<br/>#{failedCount} metareviews exist for these mappings. Delete these mappings anyway?&nbsp;<a href='#{url_yes}'>Yes</a>&nbsp;|&nbsp;<a href='#{url_no}'>No</a><BR/>"                  
     else
-      flash[:note] = "All metareview mappings for contributor \""+mapping.reviewee.name+"\" and reviewer \""+mapping.reviewer.name+"\" have been deleted."      
+      flash[:note] = "All metareview mappings for contributor \""+mapping.reviewee.name+"\" and reviewer \""+mapping.reviewer.name+"\" have been deleted."
+      @@ReviewLogger.info("Deleted all metareviewers for assignment #{mapping.reviewer.name}.")
     end
     redirect_to :action => 'list_mappings', :id => mapping.assignment.id
+    @@ReviewLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end   
 
   def delete_reviewer
+    @@ReviewLogger.debug("Entering #{self.class.name}::#{__method__}")
     mapping = ResponseMap.find(params[:id]) 
     assignment_id = mapping.assignment.id
     begin
       mapping.delete
+      @@ReviewLogger.info("Deleted review mapping for #{assignment_id}.")
       flash[:note] = "The review mapping for \""+mapping.reviewee.name+"\" and \""+mapping.reviewer.name+"\" have been deleted."        
     rescue
       flash[:error] = "A delete action failed:<br/>" + $! + "Delete this mapping anyway?&nbsp;<a href='/review_mapping/delete_review/"+mapping.id.to_s+"'>Yes</a>&nbsp;|&nbsp;<a href='/review_mapping/list_mappings/#{assignment_id}'>No</a>"     
     end
     redirect_to :action => 'list_mappings', :id => assignment_id
+    @@ReviewLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
   
   def delete_metareviewer
+    @@ReviewLogger.debug("Entering #{self.class.name}::#{__method__}")
     mapping = MetareviewResponseMap.find(params[:id])
     assignment_id = mapping.assignment.id
     flash[:note] = "The metareview mapping for "+mapping.reviewee.name+" and "+mapping.reviewer.name+" have been deleted."
     
     begin 
       mapping.delete
+      @@ReviewLogger.info("Deleted metareview mapping for #{assignment_id}.")
     rescue
       flash[:error] = "A delete action failed:<br/>" + $! + "<a href='/review_mapping/delete_metareview/"+mapping.id.to_s+"'>Delete this mapping anyway>?"     
     end
     
     redirect_to :action => 'list_mappings', :id => assignment_id
+    @@ReviewLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
 
   def release_reservation

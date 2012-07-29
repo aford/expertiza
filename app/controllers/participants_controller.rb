@@ -134,16 +134,20 @@ end
   end
 
   def delete_assignment_participant
+    @@AssignmentLogger.debug("Entering #{self.class.name}::#{__method__}")
     contributor = AssignmentParticipant.find(params[:id])
     name = contributor.name
     assignment_id = contributor.assignment
     begin
       contributor.destroy
+      @@AssignmentLogger.debug("Participant #{name} removed from #{assignment_id}.")
       flash[:note] = "\"#{name}\" is no longer a participant in this assignment."
     rescue
       flash[:error] = "\"#{name}\" was not removed. Please ensure that \"#{name}\" is not a reviewer or metareviewer and try again."
     end
     redirect_to :controller => 'review_mapping', :action => 'list_mappings', :id => assignment_id
+
+    @@AssignmentLogger.debug("Entering #{self.class.name}::#{__method__}")
   end
 
 
