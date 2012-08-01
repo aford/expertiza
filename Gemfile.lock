@@ -49,8 +49,8 @@ GEM
       activesupport
     fastercsv (1.5.5)
     fastthread (1.0.7)
-    ffi (1.1.1)
-    ffi (1.1.1-x86-mingw32)
+    ffi (1.1.2)
+    ffi (1.1.2-x86-mingw32)
     gchartrb (0.8)
     gdata (1.1.2)
     gem_plugin (0.2.3)

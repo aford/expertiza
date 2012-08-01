@@ -171,6 +171,7 @@ class AssignmentController < ApplicationController
         
         # Creating node information for assignment display
         @assignment.create_node()
+        @@AssignmentLogger.info("Assignment #{@assignment.name} has been created.")
         
         flash[:alert] = "There is already an assignment named \"#{@assignment.name}\". &nbsp;<a style='color: blue;' href='../../assignment/edit/#{@assignment.id}'>Edit assignment</a>" if @assignment.duplicate_name?
         flash[:note] = 'Assignment was successfully created.'
@@ -232,6 +233,7 @@ class AssignmentController < ApplicationController
       | key, value |       
       if value.to_i > 0 and (q = Questionnaire.find(value))
         @assignment.questionnaires << q
+        @@AssignmentLogger.info("Assignment #{@assignment.name} has added questionnaire #{q}.")
      end
     }
     @@AssignmentLogger.debug("Leaving #{self.class.name}::#{__method__}")
