@@ -11,6 +11,7 @@ class InitializeLog4rLoggers < ActiveRecord::Migration
     execute "INSERT INTO log4r_loggers(name, log_level, created_at) VALUES ('teams', 'NONE', SYSDATE())"
     execute "INSERT INTO log4r_loggers(name, log_level, created_at) VALUES ('reviews', 'NONE', SYSDATE())"
     execute "INSERT INTO log4r_loggers(name, log_level, created_at) VALUES ('responses', 'NONE', SYSDATE())"
+    execute "INSERT INTO log4r_loggers(name, log_level, created_at) VALUES ('topics', 'NONE', SYSDATE())"
 
   end
 
