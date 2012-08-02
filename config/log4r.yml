@@ -1,84 +1,100 @@
 --- 
 log4r_config: 
   loggers: 
-  - trace: "false"
-    additive: "false"
-    name: assignments
-    level: DEBUG
+  - level: INFO
     outputters: 
     - stderr
     - assignments
-  - trace: "false"
+    trace: "false"
     additive: "false"
-    name: teams
-    level: NONE
+    name: assignments
+  - level: NONE
     outputters: 
     - stderr
     - teams
-  - trace: "false"
+    trace: "false"
     additive: "false"
-    name: reviews
-    level: NONE
+    name: teams
+  - level: NONE
     outputters: 
     - stderr
     - reviews
-  - trace: "false"
+    trace: "false"
     additive: "false"
-    name: responses
-    level: NONE
+    name: reviews
+  - level: NONE
     outputters: 
     - stderr
     - responses
-  outputters: 
-  - type: DateFileOutputter
-    name: assignments
-    filename: assignments.log
-    level: DEBUG
-    dirname: "#{RAILS_ROOT}/log"
-    formatter: 
-      type: PatternFormatter
-      date_pattern: "%Y-%m-%d %H:%M:%S"
-      pattern: "%d %l: %m "
-  - type: DateFileOutputter
-    name: teams
-    filename: teams.log
-    level: DEBUG
-    dirname: "#{RAILS_ROOT}/log"
-    formatter: 
-      type: PatternFormatter
-      date_pattern: "%Y-%m-%d %H:%M:%S"
-      pattern: "%d %l: %m "
-  - type: DateFileOutputter
-    name: reviews
-    filename: reviews.log
-    level: DEBUG
-    dirname: "#{RAILS_ROOT}/log"
-    formatter: 
-      type: PatternFormatter
-      date_pattern: "%Y-%m-%d %H:%M:%S"
-      pattern: "%d %l: %m "
-  - type: DateFileOutputter
+    trace: "false"
+    additive: "false"
     name: responses
-    filename: responses.log
+  - level: INFO
+    outputters: 
+    - stderr
+    - topics
+    trace: "false"
+    additive: "false"
+    name: topics
+  outputters: 
+  - filename: assignments.log
     level: DEBUG
+    type: DateFileOutputter
+    formatter: 
+      date_pattern: "%Y-%m-%d %H:%M:%S"
+      type: PatternFormatter
+      pattern: "%d %l: %m "
     dirname: "#{RAILS_ROOT}/log"
-    formatter: 
-      type: PatternFormatter
-      date_pattern: "%Y-%m-%d %H:%M:%S"
-      pattern: "%d %l: %m "
-  - type: StderrOutputter
-    name: stderr
+    name: assignments
+  - filename: teams.log
     level: DEBUG
+    type: DateFileOutputter
     formatter: 
-      type: PatternFormatter
       date_pattern: "%Y-%m-%d %H:%M:%S"
+      type: PatternFormatter
       pattern: "%d %l: %m "
+    dirname: "#{RAILS_ROOT}/log"
+    name: teams
+  - filename: reviews.log
+    level: DEBUG
+    type: DateFileOutputter
+    formatter: 
+      date_pattern: "%Y-%m-%d %H:%M:%S"
+      type: PatternFormatter
+      pattern: "%d %l: %m "
+    dirname: "#{RAILS_ROOT}/log"
+    name: reviews
+  - filename: responses.log
+    level: DEBUG
+    type: DateFileOutputter
+    formatter: 
+      date_pattern: "%Y-%m-%d %H:%M:%S"
+      type: PatternFormatter
+      pattern: "%d %l: %m "
+    dirname: "#{RAILS_ROOT}/log"
+    name: responses
+  - filename: topics.log
+    level: DEBUG
+    type: DateFileOutputter
+    formatter: 
+      date_pattern: "%Y-%m-%d %H:%M:%S"
+      type: PatternFormatter
+      pattern: "%d %l: %m "
+    dirname: "#{RAILS_ROOT}/log"
+    name: topics
+  - level: DEBUG
+    type: StderrOutputter
+    formatter: 
+      date_pattern: "%Y-%m-%d %H:%M:%S"
+      type: PatternFormatter
+      pattern: "%d %l: %m "
+    name: stderr
   pre_config: 
+    global: 
+      level: DEBUG
+    root: 
+      level: DEBUG
     custom_levels: 
     - DEBUG
     - INFO
     - NONE
-    root: 
-      level: DEBUG
-    global: 
-      level: DEBUG

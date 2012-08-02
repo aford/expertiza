@@ -37,7 +37,8 @@ class TeamsUsersController < ApplicationController
     team = Team.find_by_id(params[:id])    
     
       team.add_member(user)
-    @@TeamLogger.info("Team #{team.name} added user #{user.name}.")
+    @user = session[:user]
+    @@TeamLogger.info("Team #{team.name} added user #{user.name} by #{@user.name}.")
     
     #  flash[:error] = $!
     #end
@@ -50,7 +51,8 @@ class TeamsUsersController < ApplicationController
     teamuser = TeamsUser.find(params[:id])   
     parent_id = Team.find(teamuser.team_id).parent_id
     teamuser.destroy
-    @@TeamLogger.info("Team user #{teamuser.name} deleted from parent_id #{parent_id}.")
+    @user = session[:user]
+    @@TeamLogger.info("Team user #{teamuser.name} deleted from parent_id #{parent_id} by #{@user.name}.")
     redirect_to :controller => 'team', :action => 'list', :id => parent_id
     @@TeamLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end    
@@ -61,7 +63,8 @@ class TeamsUsersController < ApplicationController
       |item_id|      
       team_user = TeamsUser.find(item_id).first
       team_user.destroy
-      @@TeamLogger.info("Team user #{team_user.name} deleted.")
+      @user = session[:user]
+      @@TeamLogger.info("Team user #{team_user.name} deleted by #{@user.name}.")
     }
     
     redirect_to :action => 'list', :id => params[:id]

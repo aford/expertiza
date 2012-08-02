@@ -23,10 +23,11 @@ class ResponseController < ApplicationController
     @@ResponseLogger.debug("Entering #{self.class.name}::#{__method__}")
     @response = Response.find(params[:id])
     return if redirect_when_disallowed(@response)
+    @user = session[:user]
 
     map_id = @response.map.id
     @response.delete
-    @@ResponseLogger.info("Deleted response with id:#{@response.id} mapped to map_id:#{@response.map_id}")
+    @@ResponseLogger.info("#{@user.name} deleted response with id:#{@response.id} mapped to map_id:#{@response.map_id}.")
     redirect_to :action => 'redirection', :id => map_id, :return => params[:return], :msg => "The response was deleted."
     @@ResponseLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
@@ -275,13 +276,14 @@ class ResponseController < ApplicationController
   def new_feedback
     @@ResponseLogger.debug("Entering #{self.class.name}::#{__method__}")
     review = Response.find(params[:id])
+    @user = session[:user]
     if review
       reviewer = AssignmentParticipant.find_by_user_id_and_parent_id(session[:user].id, review.map.assignment.id)
       map = FeedbackResponseMap.find_by_reviewed_object_id_and_reviewer_id(review.id, reviewer.id)
       if map.nil?
         map = FeedbackResponseMap.create(:reviewed_object_id => review.id, :reviewer_id => reviewer.id, :reviewee_id => review.map.reviewer.id)
       end
-      @@ResponseLogger.info("Creating #{map.type} for review_id: #{map.id} by reviewer_id: #{map.reviewer_id} for reviewee_id: #{map.reviewee_id}")
+      @@ResponseLogger.info("#{@user.name} is creating #{map.type} for review_id: #{map.id} by reviewer_id: #{map.reviewer_id} for reviewee_id: #{map.reviewee_id}.")
       
       redirect_to :action => 'new', :id => map.id, :return => "feedback"
     else
@@ -409,6 +411,7 @@ class ResponseController < ApplicationController
     @response = Response.create(:map_id => @map.id, :additional_comment => "")
     @res = @response.id
     @questionnaire = @map.questionnaire
+    @user = session[:user]
     questions = @questionnaire.questions
     
     for i in 0..questions.size-1
@@ -418,7 +421,7 @@ class ResponseController < ApplicationController
 
     end
     msg = "#{@map.get_title} was successfully saved."
-    @@ResponseLogger.info("Created response with id:#{@response.id} mapped to map_id:#{@response.map_id}")
+    @@ResponseLogger.info("#{@user.name} created response with id:#{@response.id} mapped to map_id:#{@response.map_id}.")
     
     @@ResponseLogger.debug("Leaving #{self.class.name}::#{__method__}")
     redirect_to :controller => 'response', :action => 'saving', :id => @map.id, :return => params[:return], :msg => msg
@@ -432,8 +435,9 @@ class ResponseController < ApplicationController
     puts("saving for me ")
     puts(params[:id]);
     @map.save
+    @user = session[:user]
     
-    @@ResponseLogger.info("Successfully saved #{@map.type} for review_id: #{@map.id} by reviewer_id: #{@map.reviewer_id} for reviewee_id: #{@map.reviewee_id}")
+    @@ResponseLogger.info("#{@user.name} successfully saved #{@map.type} for review_id: #{@map.id} by reviewer_id: #{@map.reviewer_id} for reviewee_id: #{@map.reviewee_id}.")
       
     @@ResponseLogger.debug("Leaving #{self.class.name}::#{__method__}")
     redirect_to :action => 'redirection', :id => @map.id, :return => params[:return], :msg => params[:msg], :error_msg => params[:error_msg]

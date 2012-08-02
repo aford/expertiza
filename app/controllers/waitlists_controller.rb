@@ -34,8 +34,9 @@ class WaitlistsController < ApplicationController
   def create
     @@TopicLogger.debug("Entering #{self.class.name}::#{__method__}")
     @waitlist = Waitlist.new(params[:waitlist])
+    @user = session[:user]
     if @waitlist.save
-      @@TopicLogger.info("Waitlist #{@waitlist.id} was created.")
+      @@TopicLogger.info("Waitlist #{@waitlist.id} was created by #{@user.name}.")
       flash[:notice] = 'Waitlist was successfully created.'
       redirect_to :action => 'list'
     else

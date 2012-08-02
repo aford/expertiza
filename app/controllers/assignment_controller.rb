@@ -171,7 +171,8 @@ class AssignmentController < ApplicationController
         
         # Creating node information for assignment display
         @assignment.create_node()
-        @@AssignmentLogger.info("Assignment #{@assignment.name} has been created.")
+        @user - session[:user]
+        @@AssignmentLogger.info("#{@user.name} has created assignment #{@assignment.name}.")
         
         flash[:alert] = "There is already an assignment named \"#{@assignment.name}\". &nbsp;<a style='color: blue;' href='../../assignment/edit/#{@assignment.id}'>Edit assignment</a>" if @assignment.duplicate_name?
         flash[:note] = 'Assignment was successfully created.'
@@ -233,7 +234,8 @@ class AssignmentController < ApplicationController
       | key, value |       
       if value.to_i > 0 and (q = Questionnaire.find(value))
         @assignment.questionnaires << q
-        @@AssignmentLogger.info("Assignment #{@assignment.name} has added questionnaire #{q}.")
+        @user = session[:user]
+        @@AssignmentLogger.info("#{@user.name} has added questionnaire #{q} to assignment #{@assignment.name}.")
      end
     }
     @@AssignmentLogger.debug("Leaving #{self.class.name}::#{__method__}")
@@ -360,7 +362,8 @@ class AssignmentController < ApplicationController
      
         flash[:notice] = 'Assignment was successfully updated.'
         redirect_to :action => 'show', :id => @assignment
-        @@AssignmentLogger.info("Assignment #{@assignment.name} has been updated.")
+        @user = session[:user]
+        @@AssignmentLogger.info("#{@user.name} has updated assignment #{@assignment.name}.")
      
       rescue
         flash[:error] = $!

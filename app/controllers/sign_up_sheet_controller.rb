@@ -112,6 +112,7 @@ class SignUpSheetController < ApplicationController
   #that every assignment will have only one signup sheet
   def create
     @@TopicLogger.debug("Entering #{self.class.name}::#{__method__}")
+    @user = session[:user]
     topic = SignUpTopic.find_by_topic_name_and_assignment_id(params[:topic][:topic_name], params[:id])
 
     #if the topic already exists then update
@@ -156,7 +157,7 @@ class SignUpSheetController < ApplicationController
       if @sign_up_topic.save
         #NotificationLimit.create(:topic_id => @sign_up_topic.id)
         flash[:notice] = 'Topic was successfully created.'
-        @@TopicLogger.info("Signup topic #{@sign_up_topic.topic_name} created.")
+        @@TopicLogger.info("Signup topic #{@sign_up_topic.topic_name} created by #{@user.name}.")
         redirect_to_sign_up(params[:id])
       else
         render :action => 'new', :id => params[:id]
@@ -178,10 +179,11 @@ class SignUpSheetController < ApplicationController
   def delete
     @@TopicLogger.debug("Entering #{self.class.name}::#{__method__}")
     @topic = SignUpTopic.find(params[:id])
+    @user = session[:user]
 
     if !@topic.nil?
       @topic.destroy
-      @@TopicLogger.info("Signup topic #{@topic.topic_name} deleted.")
+      @@TopicLogger.info("Signup topic #{@topic.topic_name} deleted by #{@user.name}.")
     else
       flash[:error] = "Topic could not be deleted"
     end
@@ -207,6 +209,7 @@ class SignUpSheetController < ApplicationController
   def update
     @@TopicLogger.debug("Entering #{self.class.name}::#{__method__}")
     topic = SignUpTopic.find(params[:id])
+    @user = session[:user]
 
     if !topic.nil?
       topic.topic_identifier = params[:topic][:topic_identifier]
@@ -229,7 +232,7 @@ class SignUpSheetController < ApplicationController
       topic.category = params[:topic][:category]
       topic.topic_name = params[:topic][:topic_name]
       topic.save
-      @@TopicLogger.info("Topic #{topic.topic_name} has been updated.")
+      @@TopicLogger.info("Topic #{topic.topic_name} has been updated by #{@user.name}.")
     else
       flash[:error] = "Topic could not be updated"
     end
@@ -319,7 +322,8 @@ class SignUpSheetController < ApplicationController
           participant.update_topic_id(topic_id)
 
           SignUpTopic.cancel_all_waitlists(first_waitlisted_user.creator_id, assignment_id)
-          @@TopicLogger.info("All waitlists cleared for SignUpUser #{first_waitlisted_user.id}.")
+          @user = session[:user]
+          @@TopicLogger.info("All waitlists cleared for SignUpUser #{first_waitlisted_user.id} by #{@user.name}.")
         end
       end
 
@@ -328,7 +332,8 @@ class SignUpSheetController < ApplicationController
         #update participant's topic id to nil
         participant.update_topic_id(nil)
         signup_record.destroy
-        @@TopicLogger.info("Signup record destroyed for user #{signup_record.id} for topic #{signup_record.topic_id}.")
+        @user = session[:user]
+        @@TopicLogger.info("Signup record destroyed for user #{signup_record.id} for topic #{signup_record.topic_id} by #{@user.name}.")
       end
     end #end condition for 'drop deadline' check
     @@TopicLogger.debug("Leaving #{self.class.name}::#{__method__}")
@@ -373,6 +378,7 @@ class SignUpSheetController < ApplicationController
   end
 
   def confirmTopic(creator_id, topic_id, assignment_id)
+    @user = session[:user]
     @@TopicLogger.debug("Entering #{self.class.name}::#{__method__}")
     #check whether user has signed up already
     user_signup = otherConfirmedTopicforUser(assignment_id, creator_id)
@@ -399,9 +405,9 @@ class SignUpSheetController < ApplicationController
         end
         if sign_up.save
           if sign_up.is_waitlisted?
-            @@TopicLogger.info("User #{creator_id} placed on waitlist for topic #{sign_up.topic_id}.")
+            @@TopicLogger.info("User #{@user.name} placed on waitlist for topic #{sign_up.topic_id}.")
           else
-            @@TopicLogger.info("Topic #{sign_up.topic_id} confirmed for user #{creator_id}.")
+            @@TopicLogger.info("Topic #{sign_up.topic_id} confirmed for user #{@user.name}.")
           end
           result = true
         end
@@ -421,7 +427,7 @@ class SignUpSheetController < ApplicationController
         if !slotAvailable?(topic_id)
           sign_up.is_waitlisted = true
           if sign_up.save
-            @@TopicLogger.info("User #{creator_id} placed on waitlist for topic #{sign_up.topic_id}.")
+            @@TopicLogger.info("User #{@user.name} placed on waitlist for topic #{sign_up.topic_id}.")
             result = true
           end
         else
@@ -430,7 +436,7 @@ class SignUpSheetController < ApplicationController
           sign_up.is_waitlisted = false
           sign_up.save
 
-          @@TopicLogger.info("Waitlists cleared and Topic #{sign_up.topic_id} confirmed with creator #{creator_id}.")
+          @@TopicLogger.info("Waitlists cleared and Topic #{sign_up.topic_id} confirmed with user #{@user.name}.")
 
           participant = Participant.find_by_user_id_and_parent_id(session[:user].id, assignment_id)
           participant.update_topic_id(topic_id)
@@ -612,6 +618,7 @@ class SignUpSheetController < ApplicationController
 
   def create_topic_deadline(due_date, offset, topic_id)
     @@TopicLogger.debug("Entering #{self.class.name}::#{__method__}")
+    @user = session[:user]
     topic_deadline = TopicDeadline.new
     topic_deadline.topic_id = topic_id
     topic_deadline.due_at = DateTime.parse(due_date.due_at.to_s) + offset.to_i
@@ -624,7 +631,7 @@ class SignUpSheetController < ApplicationController
     topic_deadline.review_of_review_allowed_id = due_date.review_of_review_allowed_id
     topic_deadline.round = due_date.round
     topic_deadline.save
-    @@TopicLogger.info("Topic deadline id #{topic_deadline.topic_id} has been created with due data #{topic_deadline.due_at}")
+    @@TopicLogger.info("Topic deadline id #{topic_deadline.topic_id} has been created by #{@user.name} with due date #{topic_deadline.due_at}")
     @@TopicLogger.debug("Leaving #{self.class.name}::#{__method__}")
   end
 

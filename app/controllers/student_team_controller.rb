@@ -22,6 +22,7 @@ class StudentTeamController < ApplicationController
     @@TeamLogger.debug("Entering #{self.class.name}::#{__method__}")
     @student = AssignmentParticipant.find(params[:id])
     return unless current_user_id?(@student.user_id)
+    @user = session[:user]
 
     check = AssignmentTeam.find(:all, :conditions => ["name =? and parent_id =?", params[:team][:name], @student.parent_id])        
     @team = AssignmentTeam.new(params[:team])
@@ -33,7 +34,7 @@ class StudentTeamController < ApplicationController
       TeamNode.create(:parent_id => parent.id, :node_object_id => @team.id)
       user = User.find(@student.user_id)
       @team.add_member(user)
-      @@TeamLogger.info("Created team #{@team.name} with user #{user.name}.")
+      @@TeamLogger.info("#{@user.name} created team #{@team.name} with user #{user.name}.")
       redirect_to :controller => 'student_team', :action => 'view' , :id=> @student.id
     else
       flash[:notice] = 'Team name is already in use.'

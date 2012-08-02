@@ -47,11 +47,12 @@ class AssignmentSignupsController < ApplicationController
     @@AssignmentLogger.debug("Entering #{self.class.name}::#{__method__}")
     @assignment_signup = AssignmentSignup.new(params[:assignment_signup])
     @assignment_signup.assignment_id = params[:assignment_id]
-    @assignment_signup.signup_id = params[:signup_id]      
+    @assignment_signup.signup_id = params[:signup_id]
+    @user = session[:user]
       
     if @assignment_signup.save
       @assignments = Assignment.find_by_id(params[:assignment_id])
-      @@AssignmentLogger.info("Assignment signup was created for #{@assignments.name}.")
+      @@AssignmentLogger.info("Assignment signup was created for #{@assignments.name} by #{@user.name}.")
       flash[:notice] = 'Assignment Signup was successfully created for assignment '+@assignments.name                   
       redirect_to :controller => 'signup_sheets', :action => 'list'
     else
@@ -71,10 +72,11 @@ class AssignmentSignupsController < ApplicationController
 
   def update
     @@AssignmentLogger.debug("Entering #{self.class.name}::#{__method__}")
+    @user = session[:user]
     @assignment_signup = AssignmentSignup.find(params[:id])
     @assignment_signup.assignment_id = params[:assignment_id]
     if @assignment_signup.update_attributes(params[:assignment_signup])
-      @@AssignmentLogger.info("Assignmment signup #{@assignment_signup.id} updated.")
+      @@AssignmentLogger.info("Assignmment signup #{@assignment_signup.id} updated by #{@user.name}.")
       flash[:notice] = 'AssignmentSignup was successfully updated.'
       redirect_to :action => 'show', :id => @assignment_signup
     else

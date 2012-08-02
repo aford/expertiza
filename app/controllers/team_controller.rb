@@ -20,7 +20,8 @@ def delete_all
   @@TeamLogger.debug("Entering #{self.class.name}::#{__method__}")
   parent = Object.const_get(session[:team_type]).find(params[:id])  
   Team.delete_all_by_parent(parent)
-  @@TeamLogger.info("All teams deleted with parent_id #{parent.id}.")
+  @user = session[:user]
+  @@TeamLogger.info("All teams deleted with parent_id #{parent.id} by #{@user.name}.")
   redirect_to :action => 'list', :id => parent.id
   @@TeamLogger.debug("Entering #{self.class.name}::#{__method__}")
 end
@@ -54,7 +55,8 @@ def create_teams
     Team.check_for_existing(parent, params[:team][:name], session[:team_type])
     team = Object.const_get(session[:team_type]+'Team').create(:name => params[:team][:name], :parent_id => parent.id)
     TeamNode.create(:parent_id => parent.id, :node_object_id => team.id)
-    @@TeamLogger.info("Team #{team.name} has been created.")
+    @user = session[:user]
+    @@TeamLogger.info("Team #{team.name} has been created by #{@user.name}.")
     redirect_to :action => 'list', :id => parent.id
    rescue TeamExistsError
     flash[:error] = $! 
@@ -71,7 +73,8 @@ def create_teams
     Team.check_for_existing(parent, params[:team][:name], session[:team_type])
     team.name = params[:team][:name]
     team.save
-    @@TeamLogger.info("Team #{team.name} has been updated.")
+    @user = session[:user]
+    @@TeamLogger.info("Team #{team.name} has been updated by #{@user.name}.")
     redirect_to :action => 'list', :id => parent.id
    rescue TeamExistsError
     flash[:error] = $! 
@@ -91,7 +94,8 @@ def create_teams
    team = Team.find(params[:id])
    course = Object.const_get(session[:team_type]).find(team.parent_id)
    team.delete
-   @@TeamLogger.info("Team #{team.name} deleted.")
+   @user = session[:user]
+   @@TeamLogger.info("Team #{team.name} deleted by #{@user.name}.")
    redirect_to :action => 'list', :id => course.id
    @@TeamLogger.debug("Leaving #{self.class.name}::#{__method__}")
  end
